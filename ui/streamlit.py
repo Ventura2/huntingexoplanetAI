@@ -109,8 +109,3 @@ if submitted:
             mime="text/csv"
         )
         
-        
-        if USE_MOCK:
-            st.write("Test Accuracy:", test_accuracy)
-        else:
-            print('Test Accuracy:', accuracy_score(y_test, y_pred))
