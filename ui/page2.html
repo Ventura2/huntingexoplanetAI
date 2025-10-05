@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSV Column Mapper with Formulas</title>
+<style>
+  body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #1a0033, #000, #2b004f);
+    color: #fff;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+  }
+  h1 { text-align:center; color:#cbb3ff; margin-bottom:20px;}
+  .card {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  label { display:block; margin-bottom:5px;}
+  input[type="file"], input[type="text"], select, textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    color: white;
+  }
+  button {
+    padding: 10px 15px;
+    margin-top: 10px;
+    background: linear-gradient(90deg, #6d28d9, #9333ea);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  button:hover {
+    background: linear-gradient(90deg, #7c3aed, #a855f7);
+  }
+  table { width:100%; border-collapse: collapse; margin-top:15px;}
+  th, td { border:1px solid rgba(255,255,255,0.3); padding:8px; text-align:left;}
+  th { background: rgba(255,255,255,0.1);}
+</style>
+</head>
+<body>
+
+<h1>CSV Column Mapper with Formulas</h1>
+<div class="card">
+  <label for="csv1">Upload CSV 1:</label>
+  <input type="file" id="csv1" accept=".csv">
+
+  <label for="csv2">Upload CSV 2:</label>
+  <input type="file" id="csv2" accept=".csv">
+
+  <button type="button" onclick="addMappingRow()">Add Mapping</button>
+
+  <table id="mappingTable">
+    <thead>
+      <tr>
+        <th>CSV 1 Column</th>
+        <th>CSV 2 Column</th>
+        <th>Resulting DB Column</th>
+        <th>Formula / Operation</th>
+        <th>Remove</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Dynamic rows go here -->
+    </tbody>
+  </table>
+
+  <button type="button" onclick="saveMappings()">Save Mappings</button>
+</div>
+
+<script>
+let csv1Columns = [];
+let csv2Columns = [];
+
+document.getElementById('csv1').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const text = await file.text();
+  csv1Columns = text.split(/\r?\n/)[0].split(',');
+  updateAllSelects();
+});
+
+document.getElementById('csv2').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const text = await file.text();
+  csv2Columns = text.split(/\r?\n/)[0].split(',');
+  updateAllSelects();
+});
+
+function addMappingRow(){
+  const tbody = document.querySelector('#mappingTable tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><select class="csv1Col"></select></td>
+    <td><select class="csv2Col"></select></td>
+    <td><input type="text" class="dbCol" placeholder="Result column name"></td>
+    <td><input type="text" class="formula" placeholder="e.g., CSV1*1.2 + sqrt(CSV2)"></td>
+    <td><button type="button" onclick="removeRow(this)">Remove</button></td>
+  `;
+  tbody.appendChild(tr);
+  updateAllSelects();
+}
+
+function removeRow(btn){ btn.closest('tr').remove(); }
+
+function updateAllSelects(){
+  const csv1Selects = document.querySelectorAll('.csv1Col');
+  const csv2Selects = document.querySelectorAll('.csv2Col');
+  csv1Selects.forEach(s => s.innerHTML = csv1Columns.map(c => `<option value="${c}">${c}</option>`).join(''));
+  csv2Selects.forEach(s => s.innerHTML = csv2Columns.map(c => `<option value="${c}">${c}</option>`).join(''));
+}
+
+function saveMappings(){
+  const mappings = [];
+  document.querySelectorAll('#mappingTable tbody tr').forEach(tr=>{
+    const csv1Col = tr.querySelector('.csv1Col').value;
+    const csv2Col = tr.querySelector('.csv2Col').value;
+    const dbCol = tr.querySelector('.dbCol').value;
+    const formula = tr.querySelector('.formula').value;
+    mappings.push({csv1Col, csv2Col, dbCol, formula});
+  });
+  console.log("Mappings to save:", mappings);
+  alert("Mappings captured. Check console.");
+}
+</script>
+
+</body>
+</html>
